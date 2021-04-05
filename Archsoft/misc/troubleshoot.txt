@@ -1,0 +1,7 @@
+------ Startup ------
+
+If blue light flash with 2 high pitch beeps, then setup was successful
+
+If red light flashing with 2 low beeps, then a hardware malfuntion has occured, or sd card is not in or  configuration file is broken.
+
+If red light flashing with a low then high beep, then config version and flight software version is out of sync.

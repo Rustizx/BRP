@@ -1,0 +1,36 @@
+{
+    "config" : {
+        "version" : 0.15,
+        "orientationType" : "q",
+        "servoX_offset" : 101,
+        "servoY_offset" : 86,
+        "recalibrateGyro" : true,
+        "gyroX_offset" : 0,
+        "gyroY_offset" : 0,
+        "gyroZ_offset" : 0,
+        "kP" : 0.08,
+        "kI" : 0.02,
+        "kD" : 0.035,
+        "attemptDataRecovery" : false,
+        "tvcMountTroubleshoot" : false
+    },
+
+    "telemetry" : {
+        "gyro" : [104.345, 104.354, 104.345],
+        "accel" : [104.345, 104.354, 104.345],
+        "ore" : [104.345, 104.354, 104.345],
+        "altitude" : 456.3,
+        "realAltitude" : 0.2,
+        "temperature" : 20.3,
+        "state" : 1,
+        "tvcPOS" : [43, 56],
+        "pyro" : [0, 0],
+        "error" : [4, 34],
+        "pidx" : [0, 23, 53],
+        "pidy" : [34, 2, 5],
+        "pid" : [12, 53],
+        "pwm" : [43, 64],
+        "time" : 12.423,
+        "millis" : 43345
+    }
+}

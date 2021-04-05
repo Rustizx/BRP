@@ -1,0 +1,575 @@
+#include <Arduino.h>
+#include <Wire.h>
+#include <SPI.h>
+#include <SD.h>
+#include <Adafruit_BMP280.h>
+#include <Servo.h>
+#include "I2Cdev.h"
+#include "MPU6050.h"
+#include <SPIFlash.h>
+#include <ArduinoJson.h>
+
+// General Varibles
+#define SERIAL_BAUD          115200
+const float version = 0.05;
+int tick;
+bool staticfireLit = false;
+const int x = 420;
+const int y = 421;
+
+// Setup
+bool flashChip_init = false;
+bool sdCard_init = false;
+bool bmp_init = false;
+bool imu_init = false;
+bool config_init = false;
+
+// This is for the LED and Buzzer
+const int rLED = 2;
+const int gLED = 1;
+const int bLED = 0;
+const int buzzer = 15;
+
+// This is for the Voltage Pin
+const int voltage = 3;
+
+// This is for the Header Pins
+const int header1 = 23;
+const int header2 = 22;
+const int header3 = 21;
+const int header4 = 20;
+const int header5 = 17;
+
+// This is for the BMP280 barometer
+Adafruit_BMP280 bmp;
+
+// This is for the MPU6050 IMU
+MPU6050 accelgyro;
+int16_t ax, ay, az;
+int16_t gx, gy, gz;
+
+float elapsedTime, time, timePrev;        //Variables for time control
+int gyroError = 0;                         //We use this variable to only calculate once the gyro data error
+float gyroRawX, gyroRawY, gyroRawZ;     //Here we store the raw data read 
+float gyroAngleX, gyroAngleY, gyroAngleZ;         //Here we store the angle value obtained with Gyro data
+float gyroRawErrorX, gyroRawErrorY, gyroRawErrorZ; //Here we store the initial gyro data error
+
+int accError = 0;                         //We use this variable to only calculate once the Acc data error
+float rad_to_deg = 180/3.141592654;      //This value is for pasing from radians to degrees values
+float accRawX, accRawY, accRawZ;    //Here we store the raw data read 
+float accAngleX, accAngleY, accAngleZ;          //Here we store the angle value obtained with Acc data
+float accAngleErrorX, accAngleErrorY, accAngleErrorZ; //Here we store the initial Acc data error
+
+float totalAngleX, totalAngleY, totalAngleZ;
+
+// This is for the SD card
+Sd2Card card;
+SdVolume volume;
+SdFile root;
+const int SDchipSelect = 10;
+
+// This is for the Flash Chip
+uint16_t expectedDeviceID=0x9D60;
+SPIFlash flash(9, expectedDeviceID);
+
+//This is for the pyro channels
+const int Pyro1 = 8;
+const int Pyro2 = 7;
+
+bool pyro1State = 0;
+bool pyro2State = 0;
+
+//This is for the TVC servos
+float TVCX_center = 90;
+float TVCY_center = 90;
+const int TVCXpin = 6;
+const int TVCYpin = 5;
+Servo TVCXservo;
+Servo TVCYservo;
+
+// Test Mode Varibles
+int ch1, ch2, ch5, ch9;
+
+// Configuration File
+struct Config {
+  // General
+  float version;
+  bool visualization;
+  bool debug;
+
+  // Mode
+  bool flightMode;
+  bool testMode;
+  bool controllerMode;
+  bool staticfireMode;
+
+  // Hardware
+  bool tvcmountEnable;
+  bool pyro1Enable;
+  bool pyro2Enable;
+
+  // Hardware Settings
+  float tvcX_offset;
+  float tvcY_offset;
+};
+const char *configFilename = "config.txt";
+Config config;
+
+// Functions
+
+void loadConfiguration(const char *filename, Config &config){
+  Serial.println("Loading Configuration...");
+  File configFile = SD.open(filename);
+  StaticJsonDocument<400> doc; // https://arduinojson.org/v6/assistant/
+
+  DeserializationError error = deserializeJson(doc, configFile);
+  if (error) {
+    Serial.println("Failed to Parse Data from Config File!"); Serial.println();
+    config_init = false;
+
+    // Loading Config, FOR SD CARD BYPASS, DELETE WHEN NEW SD CARD COMES
+    config.version = version;
+    config.visualization = true;
+    config.debug = true;
+    config.flightMode = false;
+    config.testMode = true;
+    config.controllerMode = false;
+    config.staticfireMode = false;
+    config.tvcmountEnable = true;
+    config.pyro1Enable = true;
+    config.pyro2Enable = true;
+    config.tvcX_offset = 91;
+    config.tvcY_offset = 87;
+
+  } else {
+    Serial.println("Success!"); Serial.println();
+    config_init = true;
+
+    config.version = doc["version"];
+    config.visualization = doc["visualization"];
+    config.debug = doc["debug"];
+    config.flightMode = doc["mode"]["flightMode"];
+    config.testMode = doc["mode"]["testMode"];
+    config.controllerMode = doc["mode"]["controllerMode"];
+    config.staticfireMode = doc["mode"]["staticfireMode"];
+    config.tvcmountEnable = doc["hardware"]["tvcmountEnable"];
+    config.pyro1Enable = doc["hardware"]["pyro1Enable"];
+    config.pyro2Enable = doc["hardware"]["pyro2Enable"];
+    config.tvcX_offset = doc["hardwareSettings"]["tvcX_offset"];
+    config.tvcY_offset = doc["hardwareSettings"]["tvcY_offset"];
+  }
+
+  configFile.close();
+}
+
+void mpuUpdateData(float pastTime){
+  // Read Data from Sensor
+  accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+
+  accRawX = (float) ax;
+  accRawY = (float) ay;
+  accRawZ = (float) az;
+  gyroRawX = (float) gx;
+  gyroRawY = (float) gy;
+  gyroRawZ = (float) gz;
+
+  // Process Data
+  gyroRawX = (gyroRawX/32.8) - gyroRawErrorX;
+  gyroRawY = (gyroRawY/32.8) - gyroRawErrorY;
+  gyroRawZ = (gyroRawZ/32.8) - gyroRawErrorZ;
+
+  gyroAngleX = gyroRawX * pastTime;
+  gyroAngleY = gyroRawY * pastTime;
+  gyroAngleZ = gyroRawZ * pastTime;
+
+  accAngleX = (atan((accRawY)/sqrt(pow((accRawX),2) + pow((accRawZ),2)))*rad_to_deg) - accAngleErrorX;
+  accAngleY = (atan(-1*(accRawX)/sqrt(pow((accRawY),2) + pow((accRawZ),2)))*rad_to_deg) - accAngleErrorY;
+  accAngleZ = (atan(-1*(accRawX)/sqrt(pow((accRawY),2) + pow((accRawZ),2)))*rad_to_deg) - accAngleErrorZ;
+
+  // Apply Complentary Filter
+  totalAngleX = 0.98 *(totalAngleX + gyroAngleX) + 0.02*accAngleX;
+  totalAngleY = 0.98 *(totalAngleY + gyroAngleY) + 0.02*accAngleY;
+  totalAngleZ = 0.98 *(totalAngleZ + gyroAngleZ) + 0.02*accAngleZ;
+
+}
+
+void debug(const char message[], float number = -20031229){
+  if(config.debug == true){
+    if(number == -20031229){
+      Serial.println(message);
+    } else {
+      Serial.print(message); Serial.println(number);
+    }
+  }
+}
+
+void tvcMove(int axis, float pos){
+  if(config.tvcmountEnable == true){
+    if(axis == 420){ // X
+      //debug("Moving TVC X to ", pos);
+      TVCXservo.write(pos);
+    } else if (axis == 421){ // Y
+      //debug("Moving TVC Y to ", pos);
+      TVCYservo.write(pos);
+    }
+  }
+}
+
+void pyroToggle(int channel, int state = 2){
+  if((channel == 1) && (config.pyro1Enable == true)){
+    if(state == 2){
+      if(pyro1State == 0){
+        pyro1State = 1;
+      } else {
+        pyro1State = 0;
+      }
+    } else if(state == 1){
+      pyro1State = 1;
+    } else {
+      pyro1State = 0;
+    }
+  } else if((channel == 2) && (config.pyro2Enable == true)){
+    if(state == 2){
+      if(pyro2State == 0){
+        pyro2State = 1;
+      } else {
+        pyro2State = 0;
+      }
+    } else if(state == 1){
+      pyro2State = 1;
+    } else {
+      pyro2State = 0;
+    }
+  }
+
+  if(pyro1State == 1){
+    debug("Turning on Pyro Channel 1");
+    digitalWrite(Pyro1, HIGH);
+  } else {
+    debug("Turning off Pyro Channel 1");
+    digitalWrite(Pyro1, LOW);
+  }
+
+  if(pyro2State == 1){
+    debug("Turning on Pyro Channel 2");
+    digitalWrite(Pyro2, HIGH);
+  } else {
+    debug("Turning off Pyro Channel 2");
+    digitalWrite(Pyro2, LOW);
+  }
+}
+
+void generalMode(){
+  while(1){
+    timePrev = time;
+    time = millis();
+    elapsedTime = (time - timePrev) / 1000;
+
+    mpuUpdateData(elapsedTime);
+
+    Serial.print("Xº: ");
+    Serial.print(totalAngleX);
+    Serial.print("   |   ");
+    Serial.print("Yº: ");
+    Serial.print(totalAngleY);
+    Serial.print("   |   ");
+    Serial.print("Zº: ");
+    Serial.print(totalAngleZ);
+    Serial.println(" ");
+
+  }
+}
+
+void staticfireMode(){
+  while(1){
+    if(staticfireLit == false){
+      for( int count = 0; count == 7; count += 1 ){
+        digitalWrite(bLED, LOW);
+        tone(buzzer, 2000); delay(100); noTone(buzzer); delay(100);
+        digitalWrite(bLED, HIGH);
+        delay(800);
+      }
+      for( int count = 0; count == 3; count += 1 ){
+        digitalWrite(bLED, LOW);
+        tone(buzzer, 2000); delay(100); noTone(buzzer); delay(100);
+        tone(buzzer, 2000); delay(100); noTone(buzzer); delay(100);
+        digitalWrite(bLED, HIGH);
+        delay(600);
+      }
+      digitalWrite(bLED, LOW);
+      tone(buzzer, 2000); delay(500); noTone(buzzer); delay(10);
+      digitalWrite(bLED, HIGH);
+      staticfireLit = true;
+      pyroToggle(1, 1);
+      debug("FIRE MOTOR!!");
+    }
+
+    for (tick = (TVCX_center - 30); tick <= (TVCX_center + 30); tick += 1) { 
+      tvcMove(x, tick);             
+      delay(15);                      
+    }
+    for (tick = (TVCY_center - 30); tick <= (TVCY_center + 30); tick += 1) { 
+      tvcMove(y, tick);             
+      delay(15);                      
+    }
+    for (tick = (TVCX_center + 30); tick >= (TVCX_center - 30); tick -= 1) { 
+      tvcMove(x, tick);           
+      delay(15);                     
+    }
+    for (tick = (TVCY_center + 30); tick >= (TVCY_center - 30); tick -= 1) { 
+      tvcMove(y, tick);             
+      delay(15);                      
+    }
+  }
+}
+
+void controllerMode(){
+  while(1){
+    ch1 = pulseIn(header5, HIGH);
+    ch2 = pulseIn(header4, HIGH);
+    ch5 = pulseIn(header3, HIGH);
+    ch9 = pulseIn(header2, HIGH);
+
+    if(config.tvcmountEnable == true){
+      if((ch1-1000) == 500){
+        tvcMove(x, TVCX_center);
+        debug("TVCx : ", TVCX_center);
+
+      } else {
+        tvcMove(x, TVCX_center + ((ch1-1500)/(500/30)));
+        debug("TVCx : ", (TVCX_center + ((ch1-1500)/(500/30))));
+      }
+
+      if((ch2-1000) == 500){
+        tvcMove(y, TVCY_center);
+        debug("TVCy : ", TVCY_center);
+
+      } else {
+        tvcMove(y, TVCY_center - ((ch2-1500)/(500/30)));
+        debug("TVCy : ", (TVCY_center - ((ch2-1500)/(500/30))));
+      }
+    }
+
+    if(ch5 > 1800){
+      pyroToggle(1, 1);
+    } else {
+      pyroToggle(1, 0);
+    }
+    
+    if(ch9 > 1800){
+      pyroToggle(2, 1);
+    } else {
+      pyroToggle(2, 0);
+    }
+  }
+}
+
+
+void setup() {
+  Serial.begin(SERIAL_BAUD);
+
+  Serial.println();Serial.println();
+  Serial.print("Hello, I am Arch version ");Serial.print(version);Serial.println("! Lets get started.");
+  Serial.println();Serial.println();
+
+  Serial.println(" ---- Initalizing Hardware ---- "); Serial.println();
+
+  // Attach Servos
+  TVCXservo.attach(TVCXpin);
+  TVCYservo.attach(TVCYpin);
+
+  // Setup Controller
+  pinMode(header5, INPUT); // Channel 1
+  pinMode(header4, INPUT); // Channel 2
+  pinMode(header3, INPUT); // Channel 5
+  pinMode(header2, INPUT); // Channel 9
+
+  // Setup LED
+  Serial.println("Setting Up Pins...");
+  pinMode(rLED, OUTPUT);
+  pinMode(gLED, OUTPUT);
+  pinMode(bLED, OUTPUT);
+  pinMode(buzzer, OUTPUT);
+  pinMode(Pyro1, OUTPUT);
+  pinMode(Pyro2, OUTPUT);
+
+  digitalWrite(rLED, HIGH);
+  digitalWrite(gLED, HIGH);
+  digitalWpinMode(Pyro1, OUTPUT);
+  pinMode(Pyro2, OUTPUT);
+
+  digitalWrite(Pyro1, LOW);
+  digitalWrite(Pyro2, LOW);rite(bLED, HIGH);
+  digitalWrite(Pyro1, LOW);
+  digitalWrite(Pyro2, LOW);
+
+  Serial.println("Success!"); Serial.println();
+
+  // Barometer Initialization
+  Serial.println("Barometer Initalizing...");
+  if (!bmp.begin()) {
+    Serial.println("Failed!"); Serial.println();
+    bmp_init = false;
+  }
+  else {
+    bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
+                  Adafruit_BMP280::SAMPLING_X2,     /* Temp. oversampling */
+                  Adafruit_BMP280::SAMPLING_X16,    /* Pressure oversampling */
+                  Adafruit_BMP280::FILTER_X16,      /* Filtering. */
+                  Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */
+    Serial.println("Success!"); Serial.println();
+    bmp_init = true;
+  }
+
+  // IMU Initialization
+  Serial.println("IMU Initalizing...");
+  accelgyro.initialize();
+  if(accelgyro.testConnection() == 1){
+    Serial.println("Success!"); Serial.println();
+    imu_init = true;
+  } else {
+    Serial.println("Failed!"); Serial.println();
+    imu_init = false;
+  }
+
+  // SD Card Initialization
+  Serial.println("SD Card Initalizing...");
+  if (!SD.begin(SDchipSelect)) {
+    Serial.println("Failed!"); Serial.println();
+    sdCard_init = false;
+  } else {
+    if(SD.exists(configFilename)){
+      Serial.println("Success!"); Serial.println();
+      sdCard_init = true;
+    } else {
+      Serial.println("Failed! No config file."); Serial.println();
+      sdCard_init = false;
+    }
+  }
+
+  // Flash Chip Initialization
+  Serial.println("Flash Chip Initalizing...");
+  if (flash.initialize()){
+    Serial.println("Success!"); Serial.println();
+    flashChip_init = true;
+  }
+  else {
+    Serial.println("Failed!"); Serial.println();
+    flashChip_init = false;
+  }
+
+  // Load Configuration
+  loadConfiguration(configFilename, config);
+  TVCX_center = config.tvcX_offset;
+  TVCY_center = config.tvcY_offset;
+
+  // End of Setup
+  if(((bmp_init == 0) || (imu_init == 0) || (sdCard_init == 0) || (flashChip_init == 0) || (config_init == 0))){
+    Serial.println(" ---- Failed To Start ( Hardware Malfunction or JSON Error ) ---- ");
+    while(1){
+      digitalWrite(rLED, LOW);
+      tone(buzzer, 500); delay(100); noTone(buzzer); delay(100);
+      tone(buzzer, 500); delay(100); noTone(buzzer);
+      digitalWrite(rLED, HIGH);
+      delay(1000);
+      if(sdCard_init == false){   // SD CARD BYPASS
+        Serial.println("BYPASS FAILSAFE");
+        break;
+      }
+    }
+  } else if (!(config.version == version)) {
+    Serial.println(" ---- Failed To Start ( Wrong Version ) ---- ");
+    while(1){
+      digitalWrite(rLED, LOW);
+      tone(buzzer, 500); delay(100); noTone(buzzer); delay(100);
+      tone(buzzer, 2000); delay(100); noTone(buzzer);
+      digitalWrite(rLED, HIGH);
+      delay(1000);
+    }
+  } else {
+    Serial.println(" ---- Hardware Startup Complete ---- "); Serial.println(); Serial.println();
+    digitalWrite(bLED, LOW);
+    tone(buzzer, 2000); delay(100); noTone(buzzer); delay(100);
+    tone(buzzer, 2000); delay(100); noTone(buzzer);
+    digitalWrite(bLED, HIGH);
+  }
+
+  // Setup Sensors
+  Serial.println(" ---- Setting Up Sensors ---- "); Serial.println();
+  time = millis();
+
+  // MPU Setup
+  accelgyro.setFullScaleAccelRange(2); // Set Range +/- 8g
+  accelgyro.setFullScaleGyroRange(2); // Set Range 1000 degrees/sec
+
+  // Calculate Accelerometer Error
+  if(accError == 0) {
+    for(int a = 0; a < 200; a++) {
+      
+      accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+
+      accRawX = (float) ax;
+      accRawY = (float) ay;
+      accRawZ = (float) az;
+
+      accAngleErrorX = accAngleErrorX + ((atan((accRawX)/sqrt(pow((accRawY),2) + pow((accRawZ),2)))*rad_to_deg));
+      accAngleErrorY = accAngleErrorY + ((atan(-1*(accRawX)/sqrt(pow((accRawY),2) + pow((accRawZ),2)))*rad_to_deg)); 
+      accAngleErrorZ = accAngleErrorZ + ((atan(-1*(accRawX)/sqrt(pow((accRawY),2) + pow((accRawZ),2)))*rad_to_deg)); 
+      
+      if(a==199)
+      {
+        accAngleErrorX = accAngleErrorX/200;
+        accAngleErrorY = accAngleErrorY/200;
+        accAngleErrorZ = accAngleErrorZ/200;
+        accError = 1;
+      }
+    }
+  }
+
+  // Calculate Gyroscope Error
+  if(gyroError == 0){
+    for(int i = 0; i < 200; i++){
+
+      accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+
+      gyroRawX = (float) gx;
+      gyroRawY = (float) gy;
+      gyroRawZ = (float) gz;
+
+      gyroRawErrorX = gyroRawErrorX + (gyroRawX/32.8); 
+      gyroRawErrorY = gyroRawErrorY + (gyroRawY/32.8);
+      gyroRawErrorZ = gyroRawErrorZ + (gyroRawZ/32.8);
+
+      if(i == 199){
+        gyroRawErrorX = gyroRawErrorX/200;
+        gyroRawErrorY = gyroRawErrorY/200;
+        gyroRawErrorZ = gyroRawErrorZ/200;
+        gyroError = 1;
+      }
+    }
+  }
+
+  Serial.println("---------------------------------------------------------------"); // Detect this as the end of setup
+
+}
+
+void loop() {
+  if(config.testMode == true){
+    if(config.controllerMode == true){
+      debug("Going into Controller Test");
+      controllerMode();
+    }
+    else if(config.staticfireMode == true){
+      debug("Going into Static Fire Test");
+      tvcMove(x, TVCX_center - 28);
+      tvcMove(y, TVCY_center - 28);
+      staticfireMode();
+    }
+    else {
+      debug("General Test Mode Selected");
+      tvcMove(x, TVCX_center);
+      tvcMove(y, TVCY_center);
+      generalMode();
+    }
+  }
+}

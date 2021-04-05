@@ -1,0 +1,23 @@
+{
+    "version" : 0.05,
+    "visualization" : true,
+    "debug" : true,
+
+    "mode" : {
+        "flightMode" : false,
+        "testMode" : true,
+        "controllerMode" : false,
+        "staticfireMode" : false
+    },
+
+    "hardware" : {
+        "tvcmountEnable" : true,
+        "pyro1Enable" : true,
+        "pyro2Enable" : true
+    }
+
+    "hardwareSettings" : {
+        "tvcX_offset" : 91,
+        "tvcY_offset" : 87,
+    },
+}

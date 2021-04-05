@@ -1,0 +1,8 @@
+{
+    "launch" : false,
+    "countdownTime" : 10,
+    "servoX_offset" : 101,
+    "servoY_offset" : 86,
+    "recalibrateGyro" : false
+}
+
