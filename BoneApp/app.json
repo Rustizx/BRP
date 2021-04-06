@@ -1,31 +1,4 @@
 {
-  "expo": {
-    "name": "BoneApp",
-    "slug": "BoneApp",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./app/assets/icon.png",
-    "splash": {
-      "image": "./app/assets/splash.png",
-      "resizeMode": "contain"
-    },
-    "updates": {
-      "fallbackToCacheTimeout": 0
-    },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.blayone.boneapp",
-      "buildNumber": "1.0.0"
-    },
-    "android": {
-      "package": "com.blayone.boneapp",
-      "versionCode": 1
-    },
-    "web": {
-      "favicon": "./app/assets/favicon.png"
-    }
-  }
+  "name": "BoneApp",
+  "displayName": "BoneApp"
 }
