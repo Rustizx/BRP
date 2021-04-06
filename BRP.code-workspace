@@ -2,14 +2,6 @@
 	"folders": [
 		{
 			"path": "."
-		},
-		{
-			"name": "Archsoft",
-			"path": "Archsoft"
-		},
-		{
-			"name": "Bonesoft",
-			"path": "Bonesoft"
 		}
 	],
 	"settings": {}
