@@ -117,18 +117,18 @@ class TelemetryScreen extends Component {
                                 </View>
                             </View>
                             <View style={[ teleStyle.smallInfoBoxTop]}>
-                                <View style={[ teleStyle.xyzInfo, { backgroundColor: "teal" }, ]}>
+                                <View style={[ teleStyle.xyzInfoO, { backgroundColor: "teal" }, ]}>
                                     <Text style={ teleStyle.title }>X: </Text>
                                 </View>
-                                <View style={[ teleStyle.xyzInfo, { backgroundColor: "skyblue" }, ]}>
+                                <View style={[ teleStyle.xyzInfoO, { backgroundColor: "skyblue" }, ]}>
                                     <Text>{this.props.telemetryState.tvcPOS[0]}</Text>
                                 </View>
                             </View>
                             <View style={[ teleStyle.smallInfoBoxTop]}>
-                                <View style={[ teleStyle.xyzInfo, { backgroundColor: "teal" }, ]}>
+                                <View style={[ teleStyle.xyzInfoO, { backgroundColor: "teal" }, ]}>
                                     <Text style={ teleStyle.title }>Y: </Text>
                                 </View>
-                                <View style={[ teleStyle.xyzInfo, { backgroundColor: "skyblue" }, ]}>
+                                <View style={[ teleStyle.xyzInfoO, { backgroundColor: "skyblue" }, ]}>
                                     <Text>{this.props.telemetryState.tvcPOS[1]}</Text>
                                 </View>
                             </View>
@@ -140,18 +140,18 @@ class TelemetryScreen extends Component {
                                 </View>
                             </View>
                             <View style={[ teleStyle.smallInfoBoxTop]}>
-                                <View style={[ teleStyle.xyzInfo, { backgroundColor: "teal" }, ]}>
+                                <View style={[ teleStyle.xyzInfoO, { backgroundColor: "teal" }, ]}>
                                     <Text style={ teleStyle.title }>X: </Text>
                                 </View>
-                                <View style={[ teleStyle.xyzInfo, { backgroundColor: "skyblue" }, ]}>
+                                <View style={[ teleStyle.xyzInfoO, { backgroundColor: "skyblue" }, ]}>
                                     <Text>{this.props.telemetryState.pwm[0]}</Text>
                                 </View>
                             </View>
                             <View style={[ teleStyle.smallInfoBoxTop]}>
-                                <View style={[ teleStyle.xyzInfo, { backgroundColor: "teal" }, ]}>
+                                <View style={[ teleStyle.xyzInfoO, { backgroundColor: "teal" }, ]}>
                                     <Text style={ teleStyle.title }>Y: </Text>
                                 </View>
-                                <View style={[ teleStyle.xyzInfo, { backgroundColor: "skyblue" }, ]}>
+                                <View style={[ teleStyle.xyzInfoO, { backgroundColor: "skyblue" }, ]}>
                                     <Text>{this.props.telemetryState.pwm[1]}</Text>
                                 </View>
                             </View>
@@ -267,6 +267,15 @@ const teleStyle = StyleSheet.create({
     },
     xyzInfo: {
         margin: 10,
+        alignItems: "center",
+        justifyContent: "center",
+        flexGrow: 1,
+        flexShrink: 1,
+        borderRadius: 10,
+    },
+    xyzInfoO: {
+        marginHorizontal: 10,
+        marginVertical: 5,
         alignItems: "center",
         justifyContent: "center",
         flexGrow: 1,

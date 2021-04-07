@@ -25,6 +25,7 @@ export const telemetry_resetUpdate = "telemetry/resetData";
 
 // -------------- LAUNCH TYPES --------------
 export const launch_launchRocket = "launch/launchRocket";
+export const launch_deploySupport = "launch/deploySupport";
 
 
 // -------------- SETTINGS TYPES --------------
@@ -37,6 +38,7 @@ export const settings_storage_clearIPs = "settings/storage/clearIPs";
 
 // Settings Changes Actions
 export const settings_setIP = "settings/setIP";
+export const settings_changeCountdownTime = "settings/changeCountdownTime";
 
 // Testing Actions
 export const test_flip = "testFlip";

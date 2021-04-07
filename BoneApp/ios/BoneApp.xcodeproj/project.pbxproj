@@ -12,6 +12,7 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		6F5DF1C8A739DC898F2148C1 /* libPods-BoneApp-BoneAppTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5AAA0B8A6EAF45607DE07141 /* libPods-BoneApp-BoneAppTests.a */; };
+		7A08CFE6261D5859005F4D74 /* rubikmonoone-regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7A08CFE1261D56C3005F4D74 /* rubikmonoone-regular.ttf */; };
 		7A6A3CCD261C18A0005A281C /* bone.png in Resources */ = {isa = PBXBuildFile; fileRef = 7A6A3CB7261C18A0005A281C /* bone.png */; };
 		7A6A3CCE261C18A0005A281C /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 7A6A3CB8261C18A0005A281C /* logo.png */; };
 		7A6A3CCF261C18A0005A281C /* launch.png in Resources */ = {isa = PBXBuildFile; fileRef = 7A6A3CB9261C18A0005A281C /* launch.png */; };
@@ -62,6 +63,7 @@
 		33E691092EDB32A722D3C8C2 /* Pods-BoneApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BoneApp.debug.xcconfig"; path = "Target Support Files/Pods-BoneApp/Pods-BoneApp.debug.xcconfig"; sourceTree = "<group>"; };
 		48341DB813FE921D5C068EF5 /* Pods-BoneApp-BoneAppTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BoneApp-BoneAppTests.debug.xcconfig"; path = "Target Support Files/Pods-BoneApp-BoneAppTests/Pods-BoneApp-BoneAppTests.debug.xcconfig"; sourceTree = "<group>"; };
 		5AAA0B8A6EAF45607DE07141 /* libPods-BoneApp-BoneAppTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-BoneApp-BoneAppTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7A08CFE1261D56C3005F4D74 /* rubikmonoone-regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "rubikmonoone-regular.ttf"; path = "../app/assets/fonts/rubikmonoone-regular.ttf"; sourceTree = "<group>"; };
 		7A6A3C3F261C0AF3005A281C /* FontAwesome5_Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = FontAwesome5_Regular.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Regular.ttf"; sourceTree = "<group>"; };
 		7A6A3C40261C0AF3005A281C /* FontAwesome.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = FontAwesome.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome.ttf"; sourceTree = "<group>"; };
 		7A6A3C41261C0AF3005A281C /* FontAwesome5_Brands.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = FontAwesome5_Brands.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Brands.ttf"; sourceTree = "<group>"; };
@@ -161,6 +163,7 @@
 		7A6A3C38261C0A6C005A281C /* Fonts */ = {
 			isa = PBXGroup;
 			children = (
+				7A08CFE1261D56C3005F4D74 /* rubikmonoone-regular.ttf */,
 				7A6A3C40261C0AF3005A281C /* FontAwesome.ttf */,
 				7A6A3C41261C0AF3005A281C /* FontAwesome5_Brands.ttf */,
 				7A6A3C3F261C0AF3005A281C /* FontAwesome5_Regular.ttf */,
@@ -335,6 +338,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7A08CFE6261D5859005F4D74 /* rubikmonoone-regular.ttf in Resources */,
 				7A6A3CE6261C19A0005A281C /* iosicons in Resources */,
 				7A6A3CDF261C18A0005A281C /* icon.bmp in Resources */,
 				7A6A3CD9261C18A0005A281C /* stopconnect.png in Resources */,
@@ -603,7 +607,7 @@
 				DEVELOPMENT_TEAM = JY9PJ9P4ZJ;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = BoneApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -630,7 +634,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JY9PJ9P4ZJ;
 				INFOPLIST_FILE = BoneApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

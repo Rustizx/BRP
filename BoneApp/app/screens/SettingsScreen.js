@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { View, Text, Button, StyleSheet, TextInput } from "react-native";
 import { connect } from "react-redux";
-import { setIPAddress, testFlip } from '../redux/actions/settingsActions';
+import { setIPAddress, changeCountdownTime, testFlip } from '../redux/actions/settingsActions';
 import * as Haptics from "expo-haptics";
 
 import { mainStyles } from "../styles";
@@ -12,6 +12,7 @@ class SettingsScreen extends Component {
         super(props);
         this.state = {
             ipTextBox: null,
+            timeTextBox: null,
         };
     }
 
@@ -28,6 +29,15 @@ class SettingsScreen extends Component {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         this.props._setIPAddress(this.state.ipTextBox);
     };
+
+    setTime = () => {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        if(parseInt(this.state.timeTextBox) > 10) {
+            this.props._changeCountdownTime(this.state.timeTextBox);
+        } else {
+            this.props._changeCountdownTime("11");
+        }
+    }
 
     render() {
         return (
@@ -49,7 +59,22 @@ class SettingsScreen extends Component {
                         <Button onPress={() => {this.setIP()}} color="#FFFFFF" title="SET" />
                     </View>
                 </View>
-                <View style={[settingsStyle.infoBoxSingle]}></View>
+                <View style={[settingsStyle.infoBoxSingle, { backgroundColor: "tomato"}]}>
+                    <View style={[settingsStyle.xyzInfo, { marginHorizontal: 10, flexGrow: 1.5, backgroundColor: "teal"}]}>
+                        <Text style={settingsStyle.title}>Countdown Time:</Text>
+                    </View>
+                    <View style={[settingsStyle.xyzInfo, { flexGrow: 3, backgroundColor: "skyblue"}]}>
+                    <TextInput
+                        style={{ height: 40, width: "85%", borderColor: 'gray', borderWidth: 1, borderRadius: 10 }}
+                        onChangeText={text => this.setState({timeTextBox: text})}
+                        value={this.state.timeTextBox}
+                        placeholder={this.props.settingsState.launchCountdownTime}
+                    />
+                    </View>
+                    <View style={[settingsStyle.xyzInfo, { marginHorizontal: 10, flexGrow: 1, backgroundColor: "purple"}]}>
+                        <Button onPress={() => {this.setTime()}} color="#FFFFFF" title="SET" />
+                    </View>
+                </View>
                 <View style={[settingsStyle.infoBoxSingle]}></View>
                 <View style={[settingsStyle.infoBoxSingle]}></View>
                 <View style={[settingsStyle.infoBoxSingle]}></View>
@@ -93,6 +118,7 @@ const mapDispatchToProps = dispatch => {
     return {
         _testFlip: () => dispatch(testFlip()),
         _setIPAddress: (ip) => dispatch(setIPAddress(ip)),
+        _changeCountdownTime: (time) => dispatch(changeCountdownTime(time)),
     }
 };
 

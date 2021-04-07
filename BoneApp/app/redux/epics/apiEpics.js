@@ -2,7 +2,6 @@ import { mapTo, map, switchMap, catchError, startWith, exhaustMap, takeUntil } f
 import { combineEpics, ofType } from "redux-observable";
 import { loadArchFailed, loadedArch, loadedStatus, loadStatusFailed, startArchUpdates, stopArchUpdates } from "../actions/telemetryActions";
 import { api_loadedStatus, api_loadStatusFailed, telemetry_startArchUpdate, telemetry_startStatusUpdate, telemetry_stopArchUpdate, telemetry_stopStatusUpdate } from "../types";
-import { Observable } from "rxjs/internal/Observable";
 import { from, of, timer } from "rxjs";
 import axios from "axios";
 
