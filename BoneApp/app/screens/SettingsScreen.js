@@ -41,6 +41,7 @@ class SettingsScreen extends Component {
     }
 
     sendManCommand = () => {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         fetchT(("http://" + this.props.settingsState.ipAddress + "/man"), 500)
             .then((response) => console.log(response.data))
             .catch((err) => console.log(err));
