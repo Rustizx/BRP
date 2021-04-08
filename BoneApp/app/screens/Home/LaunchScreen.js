@@ -45,37 +45,15 @@ class LaunchScreen extends Component {
     }
 
     sendLaunchCommand = () => {
-      fetchT(("http://" + this.props.settingsState.ipAddress + "/data"), {
-        method: 'POST',
-        body: JSON.stringify({
-          action: "launch"
-        }),
-        headers: {
-          'Content-type': 'application/json; charset=UTF-8',
-        },
-      }, 500)
-        .then((response) => response.json())
-        .then((json) => console.log(json))
-        .catch((err) => {
-            console.log(err);
-        });
+      fetchT(("http://" + this.props.settingsState.ipAddress + "/launch"), 500)
+        .then((response) => console.log(response.data))
+        .catch((err) => console.log(err));
     }
 
     sendSupportCommand = () => {
-      fetchT(("http://" + this.props.settingsState.ipAddress + "/data"), {
-        method: 'POST',
-        body: JSON.stringify({
-          action: "support"
-        }),
-        headers: {
-          'Content-type': 'application/json; charset=UTF-8',
-        },
-      }, 500)
-        .then((response) => response.json())
-        .then((json) => console.log(json))
-        .catch((err) => {
-            console.log(err);
-        });
+      fetchT(("http://" + this.props.settingsState.ipAddress + "/support"), 500)
+        .then((response) => console.log(response.data))
+        .catch((err) => console.log(err));
     }
 
     render() {

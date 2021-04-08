@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
-import { View, Text, Button, StyleSheet, TextInput } from "react-native";
+import { View, Text, Button, StyleSheet, TextInput, TouchableWithoutFeedback } from "react-native";
 import { connect } from "react-redux";
 import { setIPAddress, changeCountdownTime, testFlip } from '../redux/actions/settingsActions';
 import * as Haptics from "expo-haptics";
+import fetchT from "../functions/fetchWithTimeout";
 
 import { mainStyles } from "../styles";
 
@@ -37,6 +38,12 @@ class SettingsScreen extends Component {
         } else {
             this.props._changeCountdownTime("11");
         }
+    }
+
+    sendManCommand = () => {
+        fetchT(("http://" + this.props.settingsState.ipAddress + "/man"), 500)
+            .then((response) => console.log(response.data))
+            .catch((err) => console.log(err));
     }
 
     render() {
@@ -75,7 +82,13 @@ class SettingsScreen extends Component {
                         <Button onPress={() => {this.setTime()}} color="#FFFFFF" title="SET" />
                     </View>
                 </View>
-                <View style={[settingsStyle.infoBoxSingle]}></View>
+                <View style={[settingsStyle.infoBoxSingle, { backgroundColor: "tomato"}]}>
+                    <View style={settingsStyle.backButtonButton}>
+                        <TouchableWithoutFeedback style={{flex:1, justifyContent:"center"}} onPress={this.sendManCommand}>
+                            <Text style={[settingsStyle.textButton]}>Manual Manipulation</Text>
+                        </TouchableWithoutFeedback>
+                    </View>
+                </View>
                 <View style={[settingsStyle.infoBoxSingle]}></View>
                 <View style={[settingsStyle.infoBoxSingle]}></View>
                 <View style={[settingsStyle.infoBoxSingle]}></View>
@@ -111,6 +124,21 @@ const settingsStyle = StyleSheet.create({
         justifyContent: "center",
         flexBasis: 5,
         borderRadius: 10,
+    },
+    textButton: {
+        flex: 1,
+        fontSize: 20,
+        color: "white",
+        textAlign: "center",
+        fontFamily: "rubikmonoone-regular",
+    },
+    backButtonButton: {
+        borderRadius: 25, 
+        flex: 1,
+        margin: 15,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#03a9f4",
     },
 });
 
