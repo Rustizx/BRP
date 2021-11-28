@@ -35,7 +35,7 @@
 
 #if accessmode == 0
 const char *ssid = "CatTower";
-const char *password = "***REMOVED***";
+const char *password = "";
 
 #else
 const char *ssid = "BoneNetwork";

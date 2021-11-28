@@ -34,7 +34,7 @@
 
 #if accessmode == 0
 const char *ssid = "CatTower";
-const char *password = "***REMOVED***";
+const char *password = "";
 
 #else
 const char *ssid = "BoneNetwork";
@@ -109,41 +109,37 @@ void setup(void)
     {
     }
 
-    server.on("/", []() {
-        server.send(200, "text/html", webPage);
-    });
-    server.on("/ledON", []() {
-        server.send(200, "text/html", webPage);
-        digitalWrite(statusLED, HIGH);
-        Serial.write("1");
-        delay(1000);
-    });
-    server.on("/ledOFF", []() {
-        server.send(200, "text/html", webPage);
-        digitalWrite(statusLED, LOW);
-        Serial.write("0");
-        delay(1000);
-    });
+    server.on("/", []()
+              { server.send(200, "text/html", webPage); });
+    server.on("/ledON", []()
+              {
+                  server.send(200, "text/html", webPage);
+                  digitalWrite(statusLED, HIGH);
+                  Serial.write("1");
+                  delay(1000);
+              });
+    server.on("/ledOFF", []()
+              {
+                  server.send(200, "text/html", webPage);
+                  digitalWrite(statusLED, LOW);
+                  Serial.write("0");
+                  delay(1000);
+              });
 
-    server.on("/ArchData", []() {
-        server.send(200, "text/plain", rocketData);
-    });
+    server.on("/ArchData", []()
+              { server.send(200, "text/plain", rocketData); });
 
-    server.on("/ArchDataPretty", []() {
-        server.send(200, "text/plain", rocketDataPretty);
-    });
+    server.on("/ArchDataPretty", []()
+              { server.send(200, "text/plain", rocketDataPretty); });
 
-    server.on("/ArchDataExample", []() {
-        server.send(200, "text/plain", exampleRocketData);
-    });
+    server.on("/ArchDataExample", []()
+              { server.send(200, "text/plain", exampleRocketData); });
 
-    server.on("/status", []() {
-        server.send(200, "text/plain", status);
-    });
+    server.on("/status", []()
+              { server.send(200, "text/plain", status); });
 
-    server.on("/test", []() {
-        server.send(200, "text/plain", test);
-    });
+    server.on("/test", []()
+              { server.send(200, "text/plain", test); });
 
     server.begin();
 }
