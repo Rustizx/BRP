@@ -5,7 +5,7 @@ This project was split into three separate parts (more info at https://www.josh.
 ## Archsoft (Teensy 3.2)
 Archsoft is the flight software used created for Arch(the flight computer onboard the model rocket).
 
-This was programmed in C++ using Platform IO. Two different libraries were created exclusively for Arch to make interfacing with it's features easier.
+This was programmed in C++ using Platform IO. Three different libraries were created exclusively for Arch to make interfacing with it's features easier.
 
 
 ## BoneApp (IOS)
